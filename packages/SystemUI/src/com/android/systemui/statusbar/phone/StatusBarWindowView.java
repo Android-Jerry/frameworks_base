@@ -34,12 +34,15 @@ import android.media.session.MediaSessionLegacyHelper;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.DisplayCutout;
 import android.view.InputDevice;
 import android.view.InputQueue;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -101,6 +104,9 @@ public class StatusBarWindowView extends FrameLayout {
      * events manually as it's outside of the regular view bounds.
      */
     private boolean mExpandingBelowNotch;
+    private int mStatusBarHeaderHeight;
+
+    private GestureDetector mDoubleTapGesture;
 
     public StatusBarWindowView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -112,6 +118,8 @@ public class StatusBarWindowView extends FrameLayout {
             mService.wakeUpIfDozing(SystemClock.uptimeMillis(), this);
             return true;
         }, null, null);
+        mStatusBarHeaderHeight = context
+                .getResources().getDimensionPixelSize(R.dimen.status_bar_height);
     }
 
     @Override
@@ -222,6 +230,20 @@ public class StatusBarWindowView extends FrameLayout {
     @Override
     protected void onAttachedToWindow () {
         super.onAttachedToWindow();
+
+        mDoubleTapGesture = new GestureDetector(mContext, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+                Log.d(TAG, "Gesture!!");
+                if (pm != null) {
+                    pm.goToSleep(e.getEventTime());
+                } else {
+                    Log.d(TAG, "getSystemService returned null PowerManager");
+                }
+                return true;
+            }
+        });
 
         // We need to ensure that our window doesn't suffer from overdraw which would normally
         // occur if our window is translucent. Since we are drawing the whole window anyway with
@@ -344,6 +366,10 @@ public class StatusBarWindowView extends FrameLayout {
             return true;
         }
         boolean intercept = false;
+        if (ev.getY() < mStatusBarHeaderHeight) {
+            if (DEBUG) Log.w(TAG, "logging double tap gesture");
+            mDoubleTapGesture.onTouchEvent(ev);
+        }
         if (mNotificationPanel.isFullyExpanded()
                 && mStackScrollLayout.getVisibility() == View.VISIBLE
                 && mService.getBarState() == StatusBarState.KEYGUARD
