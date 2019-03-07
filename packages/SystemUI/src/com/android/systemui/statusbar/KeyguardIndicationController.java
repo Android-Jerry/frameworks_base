@@ -34,7 +34,6 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.Log;
@@ -432,10 +431,7 @@ public class KeyguardIndicationController {
         }
 
         String chargingCurrent = "";
-        boolean showChargingCurrent = Settings.System.getIntForUser(mContext.getContentResolver(),
-            Settings.System.LOCKSCREEN_CHARGING_CURRENT, 1, UserHandle.USER_CURRENT) == 1;
-
-        if (mChargingCurrent != 0 && showChargingCurrent) {
+        if (mChargingCurrent != 0) {
             chargingCurrent = "\n" + (mChargingCurrent / 1000) + "mA/h / "
                     + (mChargingVoltage / 1000 / 1000) + "V";
         }
