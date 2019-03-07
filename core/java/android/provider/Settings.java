@@ -4420,6 +4420,12 @@ public final class Settings {
         private static final Validator AMBIENT_RECOGNITION_NOTIFICATION_VALIDATOR =
                 BOOLEAN_VALIDATOR;
 
+          /**
+          * Whether to show the negociated charger current in the lockscreen
+          * @hide
+          */
+         public static final String LOCKSCREEN_CHARGING_CURRENT = "lockscreen_charging_current";
+
         /**
          * Ambient Play saving options: Low battery
          *
